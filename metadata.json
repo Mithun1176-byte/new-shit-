@@ -1,0 +1,6 @@
+{
+  "name": "Arboretum",
+  "description": "A serene focus timer with an organic, nature-inspired aesthetic.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
