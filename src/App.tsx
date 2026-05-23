@@ -654,6 +654,8 @@ export default function App() {
   const [displayName, setDisplayName] = useState<string>(() => load('displayName', 'Forest Keeper'));
   const [profilePic, setProfilePic] = useState<string>(() => load('profilePic', 'https://picsum.photos/seed/keeper/200'));
   const sessionIdRef = useRef<number>(load('sessionIdRef', 0));
+  const sessionStartRef = useRef<number | null>(null);
+  const lastElapsedRef = useRef<number>(0);
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
 
   const totalTime = duration * 60;
@@ -719,23 +721,49 @@ export default function App() {
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    if (isActive && timeLeft > 0) {
+    if (isActive) {
+      if (!sessionStartRef.current) {
+        const initialElapsed = totalTime - timeLeft;
+        sessionStartRef.current = Date.now() - (initialElapsed * 1000);
+        lastElapsedRef.current = initialElapsed;
+      }
       interval = setInterval(() => {
-        setTimeLeft((p) => p - 1);
-        setTotalFocusSeconds((p) => p + 1);
+        const elapsed = Math.floor((Date.now() - sessionStartRef.current!) / 1000);
+        const remaining = Math.max(totalTime - elapsed, 0);
+        setTimeLeft(remaining);
+        
+        const delta = elapsed - lastElapsedRef.current;
+        if (delta > 0) {
+          setTotalFocusSeconds((p) => p + delta);
+          lastElapsedRef.current = elapsed;
+        }
+        
+        if (remaining === 0) {
+          clearInterval(interval);
+          handleComplete();
+        }
       }, 1000);
-    } else if (isActive && timeLeft === 0) {
-      handleComplete();
+    } else {
+      sessionStartRef.current = null;
     }
     return () => clearInterval(interval);
-  }, [isActive, timeLeft]);
+  }, [isActive, totalTime]);
 
   const startSession = () => {
+    // Ask for notification permission
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
     setSessionStartTime(new Date());
     setIsActive(true);
   };
 
   const handleComplete = async () => {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification('🌲 Session Complete!', { 
+        body: 'Your tree has been planted. Great work!' 
+      });
+    }
     setIsActive(false);
     const now = new Date();
     const hour = (sessionStartTime || now).getHours();
