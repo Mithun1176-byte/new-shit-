@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   TreePine, X, Home, Trees, TrendingUp, User,
-  Sprout, Leaf, Gift, Volume2, Plus, Minus,
+  Sprout, Leaf, Gift, Volume2, VolumeX, SkipForward, SkipBack, Plus, Minus,
   Trophy, Flame, Brain, Clock, AlertTriangle, Star, ChevronUp,
 } from 'lucide-react';
 // FIX 1: Added Minus to imports — was missing, caused build error
@@ -657,6 +657,12 @@ export default function App() {
   const sessionStartRef = useRef<number | null>(null);
   const lastElapsedRef = useRef<number>(0);
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
+  const [soundOn, setSoundOn] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [audioPlaylist, setAudioPlaylist] = useState<{name: string, url: string}[]>([
+    { name: 'Continuous soft rain', url: 'https://actions.google.com/sounds/v1/water/rain_on_roof.ogg' }
+  ]);
+  const [currentAudioIndex, setCurrentAudioIndex] = useState(0);
 
   const totalTime = duration * 60;
   const progress = (timeLeft / totalTime) * 100;
@@ -719,6 +725,79 @@ export default function App() {
     if (!isActive) setTimeLeft(duration * 60);
   }, [duration, isActive]);
 
+  // Cleanup audio on unmount
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+    };
+  }, []);
+
+  const toggleSound = () => {
+    const nextState = !soundOn;
+    setSoundOn(nextState);
+    if (nextState) {
+      if (!audioRef.current) {
+        audioRef.current = new Audio(audioPlaylist[currentAudioIndex].url);
+        audioRef.current.loop = true;
+        audioRef.current.volume = 0.5;
+      } else {
+        if (audioRef.current.src !== audioPlaylist[currentAudioIndex].url) {
+          audioRef.current.src = audioPlaylist[currentAudioIndex].url;
+          audioRef.current.load();
+        }
+      }
+      audioRef.current.play().catch((e) => {
+        console.log('Audio playback failed:', e);
+      });
+    } else {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+    }
+  };
+
+  const handleAudioUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      const newItems = files.map(file => ({
+        name: file.name,
+        url: URL.createObjectURL(file)
+      }));
+      setAudioPlaylist(prev => [...prev, ...newItems]);
+      const newIndex = audioPlaylist.length; // Will play the first newly added song
+      setCurrentAudioIndex(newIndex);
+      
+      if (soundOn) {
+        setSoundOn(false);
+        if (audioRef.current) audioRef.current.pause();
+      }
+      
+      if (audioRef.current) {
+        audioRef.current.src = newItems[0].url;
+        audioRef.current.load();
+      }
+    }
+  };
+
+  const playIndex = (index: number) => {
+    if (audioPlaylist.length === 0) return;
+    const safeIndex = (index + audioPlaylist.length) % audioPlaylist.length;
+    setCurrentAudioIndex(safeIndex);
+    
+    if (audioRef.current) {
+      audioRef.current.src = audioPlaylist[safeIndex].url;
+      audioRef.current.load();
+      if (soundOn) {
+        audioRef.current.play().catch(e => console.log('Audio playback failed:', e));
+      }
+    }
+  };
+
+  const handleNextAudio = () => playIndex(currentAudioIndex + 1);
+  const handlePrevAudio = () => playIndex(currentAudioIndex - 1);
+
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isActive) {
@@ -759,6 +838,10 @@ export default function App() {
   };
 
   const handleComplete = async () => {
+    if (soundOn) {
+      setSoundOn(false);
+      if (audioRef.current) audioRef.current.pause();
+    }
     if ('Notification' in window && Notification.permission === 'granted') {
       new Notification('🌲 Session Complete!', { 
         body: 'Your tree has been planted. Great work!' 
@@ -797,6 +880,10 @@ export default function App() {
   };
 
   const giveUp = async () => {
+    if (soundOn) {
+      setSoundOn(false);
+      if (audioRef.current) audioRef.current.pause();
+    }
     setIsActive(false);
     const now = new Date();
     const hour = (sessionStartTime || now).getHours();
@@ -916,18 +1003,36 @@ export default function App() {
                       </div>
                     </motion.div>
                   </div>
-                  <div className="bg-[#f0f4ea] dark:bg-[#0f1f17] p-6 rounded-[2rem] flex items-center justify-between border border-[#d9e8b5]/20 dark:border-[#accebc]/5">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-[#d9e8b5]/50 dark:bg-emerald-900/20 flex items-center justify-center">
-                        <Volume2 className="w-5 h-5 text-[#3d5a2d] dark:text-[#accebc]" />
+                  <div className="bg-[#f0f4ea] dark:bg-[#0f1f17] p-6 rounded-[2rem] flex flex-col gap-4 border border-[#d9e8b5]/20 dark:border-[#accebc]/5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4 min-w-0 flex-1">
+                        <button 
+                          onClick={toggleSound}
+                          className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${soundOn ? 'bg-[#3d5a2d] text-white dark:bg-emerald-500/20 dark:text-emerald-400' : 'bg-[#d9e8b5]/50 text-[#3d5a2d] dark:bg-emerald-900/20 dark:text-[#accebc]'}`}
+                        >
+                          {soundOn ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
+                        </button>
+                        <div className="overflow-hidden min-w-0 pr-2">
+                          <p className="font-body font-bold text-sm text-[#1a1a1a] dark:text-[#d4e7da]">Forest Ambient</p>
+                          <p className="text-[10px] text-[#1a1a1a]/40 dark:text-[#c3c8c2]/40 uppercase tracking-widest truncate">{audioPlaylist[currentAudioIndex]?.name || 'No audio'}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-body font-bold text-sm text-[#1a1a1a] dark:text-[#d4e7da]">Forest Ambient</p>
-                        <p className="text-[10px] text-[#1a1a1a]/40 dark:text-[#c3c8c2]/40 uppercase tracking-widest">Soft rain and birdsong</p>
+                      
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <button onClick={handlePrevAudio} className="w-8 h-8 rounded-full flex items-center justify-center bg-black/5 dark:bg-white/5 text-[#3d5a2d] dark:text-[#accebc] hover:bg-black/10 transition-colors">
+                          <SkipBack className="w-4 h-4" />
+                        </button>
+                        <button onClick={handleNextAudio} className="w-8 h-8 rounded-full flex items-center justify-center bg-black/5 dark:bg-white/5 text-[#3d5a2d] dark:text-[#accebc] hover:bg-black/10 transition-colors">
+                          <SkipForward className="w-4 h-4" />
+                        </button>
                       </div>
                     </div>
-                    <div className="w-12 h-6 bg-[#d9e8b5] dark:bg-emerald-800 rounded-full relative cursor-pointer">
-                      <div className="absolute right-1 top-1 w-4 h-4 bg-[#3d5a2d] dark:bg-emerald-200 rounded-full" />
+                    
+                    <div className="flex justify-end border-t border-[#d9e8b5]/40 dark:border-[#accebc]/10 pt-3">
+                      <label className="cursor-pointer">
+                        <input type="file" multiple accept="audio/*" className="hidden" onChange={handleAudioUpload} />
+                        <span className="text-[10px] font-bold text-[#3d5a2d] dark:text-emerald-400 uppercase tracking-widest hover:underline opacity-80 hover:opacity-100 transition-opacity">Upload Files</span>
+                      </label>
                     </div>
                   </div>
                 </div>
