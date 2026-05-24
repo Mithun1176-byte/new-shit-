@@ -660,7 +660,7 @@ export default function App() {
   const [soundOn, setSoundOn] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [audioPlaylist, setAudioPlaylist] = useState<{name: string, url: string}[]>([
-    { name: 'Continuous soft rain', url: 'https://actions.google.com/sounds/v1/water/rain_on_roof.ogg' }
+   { name: 'Jungle Thunderstorm', url: '/mixkit-calm-thunderstorm-in-the-jungle-2415.wav' }
   ]);
   const [currentAudioIndex, setCurrentAudioIndex] = useState(0);
 
