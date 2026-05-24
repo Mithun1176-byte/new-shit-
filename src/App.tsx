@@ -852,7 +852,7 @@ export default function App() {
     const hour = (sessionStartTime || now).getHours();
     // FIX 4: use totalTime not totalFocusSeconds for the completed session total
     // totalFocusSeconds was 1 tick behind — this is the correct final value
-    const finalTotalSeconds = totalTime + (load('totalFocusSeconds', 0) - (load('totalFocusSeconds', 0) % totalTime));
+    const finalTotalSeconds = load('totalFocusSeconds', 0);
     const newSession: Session = {
       id: ++sessionIdRef.current,
       durationMins: duration, goalMins: duration,
