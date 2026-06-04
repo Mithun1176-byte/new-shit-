@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   TreePine, X, Home, Trees, TrendingUp, User,
   Sprout, Leaf, Gift, Volume2, VolumeX, SkipForward, SkipBack, Plus, Minus,
-  Trophy, Flame, Brain, Clock, AlertTriangle, Star, ChevronUp,
+  Trophy, Flame, Brain, Clock, AlertTriangle, Star, ChevronUp, ChevronLeft, ChevronRight,
 } from 'lucide-react';
 // FIX 1: Added Minus to imports — was missing, caused build error
 import { supabase } from './lib/supabase';
@@ -93,6 +93,22 @@ function getGreeting(): string {
 
 function today(): string {
   return new Date().toISOString().slice(0, 10);
+}
+
+function getWeekDates(weekOffset: number): string[] {
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i) + weekOffset * 7);
+    return d.toISOString().slice(0, 10);
+  });
+}
+
+function formatWeekLabel(weekOffset: number): string {
+  if (weekOffset === 0) return 'This Week';
+  if (weekOffset === -1) return 'Last Week';
+  const start = new Date();
+  start.setDate(start.getDate() + weekOffset * 7 - 6);
+  return start.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) + ' week';
 }
 
 function last7Days(): string[] {
@@ -299,6 +315,124 @@ const ForestPage = ({ totalFocusSeconds }: { totalFocusSeconds: number }) => {
   );
 };
 
+// ============================================================
+// ACTIVITY CHART — with week navigation and light green bars
+// weekOffset: 0 = this week, -1 = last week, -2 = two weeks ago
+// ============================================================
+const ActivityChart = ({ sessions }: { sessions: Session[] }) => {
+  const [weekOffset, setWeekOffset] = useState(0);
+  const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+  const weekDates = getWeekDates(weekOffset);
+
+  // Map each date to total focused minutes that day
+  const dayActivity = weekDates.map((dateStr) =>
+    sessions
+      .filter((s) => s.date === dateStr)
+      .reduce((acc, s) => acc + s.durationMins, 0)
+  );
+
+  const maxActivity = Math.max(...dayActivity, 1);
+  const weekTotal = dayActivity.reduce((a, b) => a + b, 0);
+  const isCurrentWeek = weekOffset === 0;
+
+  // Get day label: Mon=1...Sun=0, we want Mon first
+  const getDayLabel = (dateStr: string) => {
+    const day = new Date(dateStr + 'T12:00:00').getDay();
+    return DAY_LABELS[day === 0 ? 6 : day - 1];
+  };
+
+  return (
+    <div className="bg-white dark:bg-[#0f1f17] rounded-[2rem] p-6 shadow-sm border border-[#d9e8b5]/30 dark:border-[#accebc]/5">
+      {/* Header with navigation */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="font-newsreader text-2xl text-[#1a1a1a] dark:text-[#d4e7da]">Activity</h2>
+          <p className="text-xs text-[#1a1a1a]/40 dark:text-[#c3c8c2]">
+            {formatWeekLabel(weekOffset)} · {weekTotal}m focused
+          </p>
+        </div>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setWeekOffset((p) => p - 1)}
+            className="w-8 h-8 rounded-full flex items-center justify-center bg-[#f0f4ea] dark:bg-emerald-900/20 text-[#3d5a2d] dark:text-[#accebc] hover:bg-[#d9e8b5] transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setWeekOffset((p) => Math.min(p + 1, 0))}
+            disabled={isCurrentWeek}
+            className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
+              isCurrentWeek
+                ? 'bg-black/5 dark:bg-white/5 text-black/20 dark:text-white/20 cursor-not-allowed'
+                : 'bg-[#f0f4ea] dark:bg-emerald-900/20 text-[#3d5a2d] dark:text-[#accebc] hover:bg-[#d9e8b5]'
+            }`}
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* Bar chart */}
+      <div className="flex items-end justify-between gap-2 mb-3" style={{ height: '160px' }}>
+        {dayActivity.map((val, i) => {
+          const heightPct = val > 0 ? Math.max((val / maxActivity) * 100, 8) : 3;
+          const isToday = weekDates[i] === today();
+          return (
+            <div key={weekDates[i]} className="flex-1 flex flex-col items-center gap-0 h-full justify-end">
+              <div className="w-full relative group" style={{ height: `${heightPct}%` }}>
+                {/* Tooltip on hover */}
+                {val > 0 && (
+                  <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-[#3d5a2d] text-white text-[9px] font-bold px-2 py-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                    {val}m
+                  </div>
+                )}
+                <motion.div
+                  initial={{ scaleY: 0 }}
+                  animate={{ scaleY: 1 }}
+                  transition={{ duration: 0.5, delay: i * 0.05, ease: 'easeOut' }}
+                  style={{ transformOrigin: 'bottom' }}
+                  className={`w-full h-full rounded-t-lg ${
+                    val === 0
+                      ? 'bg-[#f0f4ea] dark:bg-[#1d2d25]'
+                      : isToday
+                      ? 'bg-[#5DCAA5]'
+                      : 'bg-[#d9e8b5] dark:bg-[#5DCAA5]/70'
+                  }`}
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Day labels */}
+      <div className="flex justify-between gap-2 mt-2">
+        {weekDates.map((dateStr, i) => {
+          const isToday = dateStr === today();
+          return (
+            <div key={dateStr} className="flex-1 flex justify-center">
+              <span className={`text-[10px] font-bold uppercase ${
+                isToday
+                  ? 'text-[#3d5a2d] dark:text-emerald-400'
+                  : 'text-[#1a1a1a]/40 dark:text-[#c3c8c2]'
+              }`}>
+                {getDayLabel(dateStr)}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+
+      {sessions.length === 0 && (
+        <p className="text-center text-xs text-black/20 dark:text-[#c3c8c2]/30 mt-4 uppercase tracking-widest">
+          Complete sessions to see activity
+        </p>
+      )}
+    </div>
+  );
+};
+
 const InsightsPage = ({ sessions, hourModel, totalFocusSeconds, giveupCount }: {
   sessions: Session[]; hourModel: HourModel[]; totalFocusSeconds: number; giveupCount: number;
 }) => {
@@ -314,10 +448,6 @@ const InsightsPage = ({ sessions, hourModel, totalFocusSeconds, giveupCount }: {
   const giveupByHour: Record<number, number> = {};
   sessions.filter((s) => !s.completed).forEach((s) => { giveupByHour[s.hour] = (giveupByHour[s.hour] || 0) + 1; });
   const worstHourEntry = Object.entries(giveupByHour).sort((a, b) => Number(b[1]) - Number(a[1]))[0];
-  const days7 = last7Days();
-  const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  const dayActivity = days7.map((d) => sessions.filter((s) => s.date === d).reduce((a, s) => a + s.durationMins, 0));
-  const maxActivity = Math.max(...dayActivity, 1);
   const trainedHours = hourModel.map((h, i) => ({ ...h, hour: i })).filter((h) => h.count > 0).sort((a, b) => b.score - a.score);
   const maxScore = trainedHours.length > 0 ? trainedHours[0].score : 1;
 
@@ -343,31 +473,7 @@ const InsightsPage = ({ sessions, hourModel, totalFocusSeconds, giveupCount }: {
       </section>
 
       <section className="mb-8">
-        <div className="bg-white dark:bg-[#0f1f17] rounded-[2rem] p-8 shadow-sm border border-[#d9e8b5]/30 dark:border-[#accebc]/5">
-          <div className="flex justify-between items-end mb-8">
-            <div>
-              <h2 className="font-newsreader text-2xl text-[#1a1a1a] dark:text-[#d4e7da]">Activity</h2>
-              <p className="text-xs text-[#1a1a1a]/40 dark:text-[#c3c8c2]">Past 7 days focus sessions</p>
-            </div>
-            <TrendingUp className="text-[#3d5a2d] dark:text-[#accebc] w-6 h-6" />
-          </div>
-          <div className="flex items-end justify-between h-40 gap-2 mb-4">
-            {dayActivity.map((val, i) => {
-              const h = Math.max((val / maxActivity) * 100, val > 0 ? 8 : 2);
-              return (
-                <div key={days7[i]} className="flex-1 flex flex-col items-center gap-2 group">
-                  <div className="w-full bg-[#f0f4ea] dark:bg-[#1d2d25] rounded-full relative overflow-hidden transition-all duration-700" style={{ height: `${h}%` }}>
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#3d5a2d]/40 to-[#3d5a2d]/10 dark:from-[#accebc]/40 dark:to-[#accebc]/10" />
-                  </div>
-                  <span className="text-[10px] text-[#1a1a1a]/40 dark:text-[#c3c8c2] font-bold uppercase">
-                    {dayLabels[new Date(days7[i] + 'T12:00:00').getDay() === 0 ? 6 : new Date(days7[i] + 'T12:00:00').getDay() - 1]}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-          {sessions.length === 0 && <p className="text-center text-xs text-black/20 dark:text-[#c3c8c2]/30 mt-4 uppercase tracking-widest">Complete sessions to see activity</p>}
-        </div>
+        <ActivityChart sessions={sessions} />
       </section>
 
       <section className="mb-8">
