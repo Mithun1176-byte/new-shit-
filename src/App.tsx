@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   TreePine, X, Home, Trees, TrendingUp, User,
   Sprout, Leaf, Gift, Volume2, VolumeX, SkipForward, SkipBack, Plus, Minus,
-  Trophy, Flame, Brain, Clock, AlertTriangle, Star, ChevronUp, ChevronLeft, ChevronRight,
+  Trophy, Flame, Brain, Clock, AlertTriangle, Star, ChevronUp, ChevronLeft, ChevronRight, Search, Mountain, Sparkles, Timer, ChevronDown, Lock,
 } from 'lucide-react';
 // FIX 1: Added Minus to imports — was missing, caused build error
 import { supabase } from './lib/supabase';
@@ -250,6 +250,7 @@ const BottomNav = ({ activeTab, setActiveTab }: { activeTab: Tab; setActiveTab: 
 };
 
 const ForestPage = ({ totalFocusSeconds }: { totalFocusSeconds: number }) => {
+  const [showCollection, setShowCollection] = useState(false);
   const treesPlanted = Math.floor(totalFocusSeconds / (25 * 60));
   const remaining = totalFocusSeconds % (25 * 60);
   const progressToNext = (remaining / (25 * 60)) * 100;
@@ -257,40 +258,49 @@ const ForestPage = ({ totalFocusSeconds }: { totalFocusSeconds: number }) => {
   const species = getSpecies(totalMins);
 
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full flex flex-col items-center">
-      <div className="mb-12 text-center">
-        <h2 className="font-newsreader italic text-4xl mb-2 text-[#1a1a1a] dark:text-[#d4e7da] tracking-tight">Your Forest</h2>
-        <p className="text-[#1a1a1a]/40 dark:text-[#c3c8c2]/60 text-[10px] uppercase tracking-[0.2em] font-bold">A testament to your focus</p>
-      </div>
-      <div className="w-full grid grid-cols-1 gap-6">
-        <div className="bg-white dark:bg-[#0f1f17] p-8 rounded-[2.5rem] border border-[#d9e8b5]/30 dark:border-[#accebc]/5 shadow-sm flex flex-col items-center text-center">
-          <div className="w-20 h-20 bg-[#d9e8b5]/30 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mb-6">
-            <Trees className="w-10 h-10 text-[#3d5a2d] dark:text-emerald-400" />
-          </div>
-          <span className="text-4xl font-newsreader italic text-[#1a1a1a] dark:text-white mb-2">{treesPlanted}</span>
-          <span className="text-[10px] uppercase tracking-[0.2em] text-[#1a1a1a]/40 dark:text-[#c3c8c2]/60 font-bold">Trees Planted</span>
-          <div className="w-full mt-8 bg-[#f0f4ea] dark:bg-emerald-900/20 h-2 rounded-full overflow-hidden">
-            <motion.div initial={{ width: 0 }} animate={{ width: `${progressToNext}%` }} className="h-full bg-[#3d5a2d] dark:bg-emerald-500" />
-          </div>
-          <p className="mt-3 text-[10px] uppercase tracking-widest text-[#1a1a1a]/40 dark:text-[#c3c8c2]/40">
-            {Math.round(25 - remaining / 60)} minutes until next tree
-          </p>
+    <>
+      <AnimatePresence>
+        {showCollection && (
+          <SpeciesCollectionPage onClose={() => setShowCollection(false)} totalFocusSeconds={totalFocusSeconds} />
+        )}
+      </AnimatePresence>
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full flex flex-col items-center">
+        <div className="mb-12 text-center">
+          <h2 className="font-newsreader italic text-4xl mb-2 text-[#1a1a1a] dark:text-[#d4e7da] tracking-tight">Your Forest</h2>
+          <p className="text-[#1a1a1a]/40 dark:text-[#c3c8c2]/60 text-[10px] uppercase tracking-[0.2em] font-bold">A testament to your focus</p>
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-white dark:bg-[#0f1f17] p-6 rounded-[2rem] border border-[#d9e8b5]/30 dark:border-[#accebc]/5 shadow-sm">
-            <TrendingUp className="w-5 h-5 text-[#3d5a2d] dark:text-emerald-400 mb-3" />
-            <span className="text-[10px] uppercase tracking-widest text-[#1a1a1a]/40 dark:text-[#c3c8c2]/60 font-bold block mb-1">Total Focus</span>
-            <span className="font-newsreader text-xl italic text-[#1a1a1a] dark:text-[#d4e7da]">{totalMins}m</span>
+        <div className="w-full grid grid-cols-1 gap-6">
+          <div className="bg-white dark:bg-[#0f1f17] p-8 rounded-[2.5rem] border border-[#d9e8b5]/30 dark:border-[#accebc]/5 shadow-sm flex flex-col items-center text-center">
+            <div className="w-20 h-20 bg-[#d9e8b5]/30 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mb-6">
+              <Trees className="w-10 h-10 text-[#3d5a2d] dark:text-emerald-400" />
+            </div>
+            <span className="text-4xl font-newsreader italic text-[#1a1a1a] dark:text-white mb-2">{treesPlanted}</span>
+            <span className="text-[10px] uppercase tracking-[0.2em] text-[#1a1a1a]/40 dark:text-[#c3c8c2]/60 font-bold">Trees Planted</span>
+            <div className="w-full mt-8 bg-[#f0f4ea] dark:bg-emerald-900/20 h-2 rounded-full overflow-hidden">
+              <motion.div initial={{ width: 0 }} animate={{ width: `${progressToNext}%` }} className="h-full bg-[#3d5a2d] dark:bg-emerald-500" />
+            </div>
+            <p className="mt-3 text-[10px] uppercase tracking-widest text-[#1a1a1a]/40 dark:text-[#c3c8c2]/40">
+              {Math.round(25 - remaining / 60)} minutes until next tree
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-white dark:bg-[#0f1f17] p-6 rounded-[2rem] border border-[#d9e8b5]/30 dark:border-[#accebc]/5 shadow-sm">
+              <TrendingUp className="w-5 h-5 text-[#3d5a2d] dark:text-emerald-400 mb-3" />
+              <span className="text-[10px] uppercase tracking-widest text-[#1a1a1a]/40 dark:text-[#c3c8c2]/60 font-bold block mb-1">Total Focus</span>
+              <span className="font-newsreader text-xl italic text-[#1a1a1a] dark:text-[#d4e7da]">{totalMins}m</span>
+            </div>
+            <div className="bg-white dark:bg-[#0f1f17] p-6 rounded-[2rem] border border-[#d9e8b5]/30 dark:border-[#accebc]/5 shadow-sm">
+              <Star className="w-5 h-5 text-[#3d5a2d] dark:text-emerald-400 mb-3" />
+              <span className="text-[10px] uppercase tracking-widest text-[#1a1a1a]/40 dark:text-[#c3c8c2]/60 font-bold block mb-1">Rarity</span>
+              <span className="font-newsreader text-xl italic text-[#1a1a1a] dark:text-[#d4e7da]">{species.rarity}</span>
+            </div>
           </div>
           <div className="bg-white dark:bg-[#0f1f17] p-6 rounded-[2rem] border border-[#d9e8b5]/30 dark:border-[#accebc]/5 shadow-sm">
-            <Star className="w-5 h-5 text-[#3d5a2d] dark:text-emerald-400 mb-3" />
-            <span className="text-[10px] uppercase tracking-widest text-[#1a1a1a]/40 dark:text-[#c3c8c2]/60 font-bold block mb-1">Rarity</span>
-            <span className="font-newsreader text-xl italic text-[#1a1a1a] dark:text-[#d4e7da]">{species.rarity}</span>
-          </div>
-        </div>
-        <div className="bg-white dark:bg-[#0f1f17] p-6 rounded-[2rem] border border-[#d9e8b5]/30 dark:border-[#accebc]/5 shadow-sm">
-          <h3 className="font-newsreader text-lg text-[#1a1a1a] dark:text-[#d4e7da] mb-4">Species Collection</h3>
-          <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-newsreader text-lg text-[#1a1a1a] dark:text-[#d4e7da]">Species Collection</h3>
+              <button onClick={() => setShowCollection(true)} className="text-[10px] uppercase tracking-widest font-bold text-[#3d5a2d] dark:text-emerald-400 hover:opacity-80 transition-opacity">More</button>
+            </div>
+            <div className="flex flex-col gap-3">
             {TREE_SPECIES.map((s) => {
               const unlocked = totalMins >= s.minMins;
               return (
@@ -311,6 +321,234 @@ const ForestPage = ({ totalFocusSeconds }: { totalFocusSeconds: number }) => {
           </div>
         </div>
       </div>
+    </motion.div>
+    </>
+  );
+};
+
+// ============================================================
+// SPECIES COLLECTION PAGE (FULL SCREEN OVERLAY)
+// ============================================================
+const SpeciesCollectionPage = ({ onClose, totalFocusSeconds }: { onClose: () => void, totalFocusSeconds: number }) => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const treesPlanted = Math.floor(totalFocusSeconds / (25 * 60));
+  const hours = Math.round(totalFocusSeconds / 3600);
+
+  const matchSearch = (name: string) => name.toLowerCase().includes(searchQuery.toLowerCase());
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-[#f0f4ea] dark:bg-[#07160f] text-[#1a1a1a] dark:text-[#d4e7da] overflow-y-auto">
+      <header className="bg-[#f0f4ea]/90 dark:bg-[#07160f]/90 backdrop-blur-md flex justify-between items-center w-full px-6 py-4 sticky top-0 z-40 border-b border-[#d9e8b5]/50 dark:border-[#1d2d25]">
+        <div className="flex items-center gap-3">
+          <Leaf className="text-[#3d5a2d] dark:text-[#5DCAA5]" />
+          <h1 className="text-xl font-bold font-newsreader tracking-tight">Nocturnal Sanctuary</h1>
+        </div>
+        <div className="flex items-center gap-4">
+          <button onClick={onClose} className="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors duration-300">
+            <X className="w-5 h-5 text-[#1a1a1a]/60 dark:text-[#c3c8c2]" />
+          </button>
+        </div>
+      </header>
+      
+      <main className="max-w-4xl mx-auto px-6 pt-10 pb-24">
+        <section className="mb-10">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div className="max-w-md">
+              <span className="text-[#3d5a2d] dark:text-[#5DCAA5] tracking-widest uppercase text-[10px] mb-2 block font-semibold">Your Midnight Grove</span>
+              <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight leading-[1.1] font-newsreader">
+                The Moonlit <br/><span className="text-[#3d5a2d] dark:text-[#5DCAA5] italic font-medium">Arboretum</span>
+              </h2>
+              <p className="mt-4 text-[#1a1a1a]/60 dark:text-[#c3c8c2] text-sm leading-relaxed max-w-sm font-body">
+                Every tree here represents a moment of deep focus and quiet intention under the stars. Witness the nocturnal grove you've nurtured.
+              </p>
+            </div>
+            <div className="bg-white dark:bg-[#0f1f17] border border-[#d9e8b5]/50 dark:border-[#1d2d25] p-5 rounded-[1.5rem] flex flex-col items-start gap-2 min-w-[180px] shadow-sm shadow-[#3d5a2d]/5 dark:shadow-[#b9ccb6]/5">
+              <span className="text-[#3d5a2d] dark:text-[#5DCAA5] text-3xl font-bold tracking-tighter font-newsreader">{treesPlanted}</span>
+              <div className="space-y-0.5">
+                <p className="font-semibold text-xs">Grown Trees</p>
+                <p className="text-[#1a1a1a]/60 dark:text-[#c3c8c2] text-[10px]">Total focus hours: {hours}h</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div className="flex flex-wrap items-center gap-3 mb-8">
+          <div className="flex-1 min-w-[200px] relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-black/40 dark:text-white/40 w-4 h-4" />
+            <input 
+              className="w-full pl-10 pr-4 py-3 text-sm bg-white dark:bg-[#0f1f17] border border-[#d9e8b5]/50 dark:border-[#1d2d25] rounded-full focus:bg-black/5 dark:focus:bg-white/5 focus:ring-1 focus:ring-[#3d5a2d] dark:focus:ring-[#5DCAA5] focus:border-[#3d5a2d] dark:focus:border-[#5DCAA5] transition-all text-[#1a1a1a] dark:text-white placeholder:text-black/40 dark:placeholder:text-white/40 outline-none" 
+              placeholder="Search species..." 
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <div className="flex gap-2">
+            <button className="px-5 py-3 bg-[#3d5a2d] dark:bg-[#b9ccb6] text-white dark:text-[#243425] rounded-full text-xs font-semibold hover:opacity-90 transition-opacity">All Species</button>
+            <button className="px-5 py-3 bg-white dark:bg-[#0f1f17] border border-[#d9e8b5]/50 dark:border-[#1d2d25] text-[#1a1a1a]/60 dark:text-[#c3c8c2] rounded-full text-xs font-semibold hover:bg-black/5 dark:hover:bg-white/5 transition-colors">Recently Added</button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
+          {matchSearch('Ancient Oak') && (
+            <div className={`md:col-span-8 bg-white dark:bg-[#0f1f17] border border-[#d9e8b5]/50 dark:border-[#1d2d25] rounded-[1.5rem] overflow-hidden flex flex-col md:flex-row shadow-sm shadow-[#3d5a2d]/5 dark:shadow-[#b9ccb6]/5 transition-all duration-500 group ${hours >= 896 ? 'cursor-pointer hover:-translate-y-1' : 'opacity-60 grayscale'}`}>
+              <div className="md:w-1/2 h-48 md:h-auto overflow-hidden relative">
+                <img className={`w-full h-full object-cover transition-transform duration-700 opacity-90 ${hours >= 896 ? 'group-hover:scale-105' : ''}`} src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7374diRwRdEa1GJg_yLBot9oA19bhY_4_QbbsZb04qL2eFXY2a4HBESUdVB9yM85RkoD-aCUuk2XVOiwTfHL1e0PDouX7VhkayWzOyyK49UrRRuzrlI_-4uC7YAhvNh_RWBVDHJyRmq2i2Z1TII4jEWRboxdbxuYQqne8F-woPIShQWtQSUs8t2HRXTuFFDQhSg3IJZeQ2nTVYmat0c3hhFrBXZyyL9ZlDzLcOuqMP4CzFixS2hUrRUbMljEn_D9pEA2HBL1ZD_s" alt="Ancient Oak" />
+                {hours < 896 && (
+                  <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-white p-4 text-center backdrop-blur-sm">
+                    <Lock className="w-6 h-6 mb-2 text-white/80" />
+                    <span className="text-xs font-bold tracking-wider uppercase mb-1">Locked</span>
+                    <span className="text-[10px]">Unlocks at 896 focus hours</span>
+                  </div>
+                )}
+              </div>
+              <div className="p-6 md:w-1/2 flex flex-col justify-center">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="px-2.5 py-1 bg-[#3d5a2d]/10 dark:bg-[#b9ccb6]/20 text-[#3d5a2d] dark:text-[#b9ccb6] border border-[#3d5a2d]/20 dark:border-[#b9ccb6]/30 rounded-full text-[9px] font-bold uppercase tracking-tighter">Legendary</span>
+                  <span className="text-[#1a1a1a]/60 dark:text-[#c3c8c2] text-[10px] font-medium">8 Sessions</span>
+                </div>
+                <h3 className="text-2xl font-bold mb-2 tracking-tight font-newsreader">Ancient Oak</h3>
+                <p className="text-[#1a1a1a]/60 dark:text-[#c3c8c2] text-xs leading-relaxed mb-5 font-body">The anchor of your clearing. This oak represents your longest focus periods, rooted in resilience and steady growth.</p>
+                <div className="flex items-center gap-3 mt-auto">
+                  <div className="flex -space-x-1.5">
+                    <div className="w-6 h-6 rounded-full border border-white dark:border-[#0f1f17] bg-[#3d5a2d] dark:bg-[#b9ccb6] text-white dark:text-[#243425] flex items-center justify-center text-[9px] font-bold">O</div>
+                    <div className="w-6 h-6 rounded-full border border-white dark:border-[#0f1f17] bg-[#f0f4ea] dark:bg-white text-black flex items-center justify-center text-[9px] font-bold">K</div>
+                  </div>
+                  <span className="text-[10px] text-[#1a1a1a]/40 dark:text-[#8d928d] font-medium tracking-tight">32 hours concentrated</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {matchSearch('Silver Birch') && (
+            <div className="md:col-span-4 bg-white dark:bg-[#0f1f17] border border-[#d9e8b5]/50 dark:border-[#1d2d25] rounded-[1.5rem] p-5 flex flex-col group cursor-pointer transition-transform duration-500 hover:-translate-y-1 shadow-sm shadow-[#3d5a2d]/5 dark:shadow-[#b9ccb6]/5">
+              <div className="aspect-[4/3] w-full mb-4 rounded-xl overflow-hidden bg-black/5 dark:bg-[#13231a]">
+                <img className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-90" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6XN5EzgI1tyLeuKL2fJ4PY0kN4hUyIfY60h2_6e88v1txrTsUfaGCsFVEQJaF0SaUdCZJnBZyBY2QTJ2Y9YoJZNGuTu0K0TW3Am7e8gmaAy34z3lSx__PTOm42bSlIT2HhsDEs8yxQcJhWmyqt42jjgAvjtZMV0ktd0HznarwjSjbBHeInVJZ33mcT7ENpWZObT1oB63XmNfRC3wZ8yUsbAOGQjaFWOBTuzUPdKGTj21SiwvZZKC3avXJzuMEQzC1ksmvBJoHFe0" alt="Silver Birch" />
+              </div>
+              <h4 className="text-lg font-bold mb-1 font-newsreader">Silver Birch</h4>
+              <p className="text-[#3d5a2d] dark:text-[#b9ccb6] text-[10px] mb-3 font-medium uppercase tracking-widest">Pioneer Species</p>
+              <div className="mt-auto flex items-center justify-between">
+                <span className="text-[#1a1a1a]/60 dark:text-[#c3c8c2] text-xs italic">Focus: 45m sessions</span>
+                <Leaf className="w-3.5 h-3.5 text-[#3d5a2d] dark:text-[#b9ccb6]" />
+              </div>
+            </div>
+          )}
+
+          {matchSearch('Weeping Willow') && (
+            <div className={`md:col-span-4 bg-white dark:bg-[#0f1f17] border border-[#d9e8b5]/50 dark:border-[#1d2d25] rounded-[1.5rem] p-5 flex flex-col shadow-sm shadow-[#3d5a2d]/5 dark:shadow-[#b9ccb6]/5 transition-all duration-500 group ${hours >= 28 ? 'cursor-pointer hover:-translate-y-1' : 'opacity-60 grayscale'}`}>
+              <div className="aspect-[4/3] w-full mb-4 rounded-xl overflow-hidden bg-black/5 dark:bg-[#13231a] relative">
+                <img className={`w-full h-full object-cover transition-transform duration-700 opacity-90 ${hours >= 28 ? 'group-hover:scale-110' : ''}`} src="https://lh3.googleusercontent.com/aida-public/AB6AXuBjTYhNz02tDOxOKxhiy7OQW6wpeymg8tUF5TyNGNOleLBo41IywmVltUPzGbPdq1j76utYJpytprFC5948u_5wZtyMIgc5X964bsgr9da62SST_dFIiDCl_FQqySpm3Oc2cc3DoqEIhbG3nkKu9ws0ZSMLZHCS4gg1I-WxIyDnbtK5VEFpYU5_z-HWV8TIso87odLlZbTBvV2eUPhxk9iwpx5QasPBgJeq3cgrsBNpq4QNI9klyTOT4kEXWgudD8eLlgBBYuPBnds" alt="Weeping Willow" />
+                {hours < 28 && (
+                  <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-white p-4 text-center backdrop-blur-sm">
+                    <Lock className="w-6 h-6 mb-2 text-white/80" />
+                    <span className="text-xs font-bold tracking-wider uppercase mb-1">Locked</span>
+                    <span className="text-[10px]">Unlocks at 28 focus hours</span>
+                  </div>
+                )}
+              </div>
+              <h4 className="text-lg font-bold mb-1 font-newsreader">Weeping Willow</h4>
+              <p className="text-[#3d5a2d] dark:text-[#b9ccb6] text-[10px] mb-3 font-medium uppercase tracking-widest">Grace & Fluidity</p>
+              <div className="mt-auto flex items-center justify-between">
+                <span className="text-[#1a1a1a]/60 dark:text-[#c3c8c2] text-xs italic">Grown on: Mar 12</span>
+                <Timer className="w-3.5 h-3.5 text-[#3d5a2d] dark:text-[#b9ccb6]" />
+              </div>
+            </div>
+          )}
+
+          {matchSearch('Lebanese Cedar') && (
+            <div className={`md:col-span-8 bg-[#f0f4ea] dark:bg-[#28382f] border border-[#d9e8b5]/80 dark:border-[#b9ccb6]/20 rounded-[1.5rem] p-8 flex flex-col md:flex-row items-center gap-6 shadow-sm shadow-[#3d5a2d]/5 dark:shadow-[#b9ccb6]/5 transition-all duration-500 ${hours >= 448 ? '' : 'opacity-60 grayscale'}`}>
+              <div className="flex-1 text-center md:text-left">
+                <h3 className="text-2xl font-bold mb-3 tracking-tight font-newsreader">Lebanese Cedar</h3>
+                <p className="text-[#1a1a1a]/60 dark:text-[#c3c8c2] text-sm mb-6 leading-relaxed font-body">
+                  A rare specimen achieved through a perfect week of 4-hour daily focus streaks under the night sky.
+                </p>
+                <button className={`bg-[#3d5a2d] dark:bg-[#b9ccb6] text-white dark:text-[#243425] px-6 py-2.5 rounded-full font-bold text-xs tracking-wide transition-colors ${hours >= 448 ? 'hover:opacity-90' : 'opacity-50 cursor-not-allowed'}`} disabled={hours < 448}>
+                  {hours >= 448 ? 'VIEW GROWTH JOURNEY' : 'UNLOCKS AT 448 HOURS'}
+                </button>
+              </div>
+              <div className="w-40 h-40 md:w-56 md:h-56 bg-white dark:bg-[#0f1f17] rounded-full flex items-center justify-center relative border border-[#d9e8b5]/50 dark:border-[#1d2d25] overflow-hidden">
+                <img className="w-32 md:w-44 h-auto drop-shadow-2xl opacity-90" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBvl3TeADo3_u4xi_FbXEqWDT3frmdBYdSWTlRuIC8v3HqOcirhSmNq_SWviqq1_L2bZDLFGaBS8Tzmq0PQDDNkQ3UN8QQB-xvwEKh9kd9L68e992yBjsGq7uEv5SHTAVone7FlWnls0FEVE91rXVm8zVgic2rbKOgurKOxO7MDiR-36yySPHwaLQFOW7pSDKmy6vAXI1MM5c0txmT5i8TgGSavsHqUUulklUlMNl4YZykFYxMfYJcLejhBq0FTph0wZfbjpnuG5-A" alt="Lebanese Cedar" />
+                {hours >= 448 && <div className="absolute inset-0 border-2 border-dashed border-[#3d5a2d]/20 dark:border-[#b9ccb6]/20 rounded-full animate-spin-slow"></div>}
+                {hours < 448 && (
+                  <div className="absolute inset-0 bg-black/30 flex flex-col items-center justify-center text-white p-4 text-center backdrop-blur-sm rounded-full">
+                    <Lock className="w-8 h-8 opacity-80" />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {matchSearch('Scots Pine') && (
+            <div className={`md:col-span-4 bg-white dark:bg-[#0f1f17] border border-[#d9e8b5]/50 dark:border-[#1d2d25] rounded-[1.5rem] p-5 flex flex-col shadow-sm shadow-[#3d5a2d]/5 dark:shadow-[#b9ccb6]/5 transition-all duration-500 group ${hours >= 224 ? 'cursor-pointer hover:-translate-y-1' : 'opacity-60 grayscale'}`}>
+              <div className="aspect-[4/3] w-full mb-4 rounded-xl overflow-hidden bg-black/5 dark:bg-[#13231a] relative">
+                <img className={`w-full h-full object-cover transition-transform duration-700 opacity-90 ${hours >= 224 ? 'group-hover:scale-110' : ''}`} src="https://lh3.googleusercontent.com/aida-public/AB6AXuBh1s_PKoO059nT4QIHHSo9oV7xbEPpt7p2M-fJnU8upXRayDMyVSGd6UFVOy9YbcL7fnHDqkkIr_sgavYruuiDydZxpWjB2uSv_ibNRi6L37QqbpHcPG2GZM_IlyKB9_2Q8fEHbY5pHxjN-53Jf-Lx651AhDa-VjUI6GSpEKwx2yFyJjsGZfF7LO8qVnkEJbBnr-HOA4rcLqu833GcHJdifoRr4siy0LDZtkCPtIs6qfCK5EkKZY1CCDe3cjrGkn-p4sQ9gReQPS8" alt="Scots Pine" />
+                {hours < 224 && (
+                  <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-white p-4 text-center backdrop-blur-sm">
+                    <Lock className="w-6 h-6 mb-2 text-white/80" />
+                    <span className="text-xs font-bold tracking-wider uppercase mb-1">Locked</span>
+                    <span className="text-[10px]">Unlocks at 224 focus hours</span>
+                  </div>
+                )}
+              </div>
+              <h4 className="text-lg font-bold mb-1 font-newsreader">Scots Pine</h4>
+              <p className="text-[#3d5a2d] dark:text-[#b9ccb6] text-[10px] mb-3 font-medium uppercase tracking-widest">Endurance</p>
+              <div className="mt-auto flex items-center justify-between">
+                <span className="text-[#1a1a1a]/60 dark:text-[#c3c8c2] text-xs italic">Count: 12 Trees</span>
+                <Mountain className="w-3.5 h-3.5 text-[#3d5a2d] dark:text-[#b9ccb6]" />
+              </div>
+            </div>
+          )}
+
+          {matchSearch('Cherry Blossom') && (
+            <div className={`md:col-span-4 bg-white dark:bg-[#0f1f17] border border-[#d9e8b5]/50 dark:border-[#1d2d25] rounded-[1.5rem] p-5 flex flex-col shadow-sm shadow-[#3d5a2d]/5 dark:shadow-[#b9ccb6]/5 transition-all duration-500 group ${hours >= 56 ? 'cursor-pointer hover:-translate-y-1' : 'opacity-60 grayscale'}`}>
+              <div className="aspect-[4/3] w-full mb-4 rounded-xl overflow-hidden bg-black/5 dark:bg-[#13231a] relative">
+                <img className={`w-full h-full object-cover transition-transform duration-700 opacity-90 ${hours >= 56 ? 'group-hover:scale-110' : ''}`} src="https://lh3.googleusercontent.com/aida-public/AB6AXuD94FxbtU4PkA5hdwoSHCQmffgF18eXq2JP49sGCFeUqYqlc2ukLi95glNEpks487ZCBgK_jhbJFHtOA7eXys3WPsINZgku1HtRRalOPKHIWxINFSOL4AnBglbOh7wmYAMoh255DlklyWDjMjd2RJvpEq9BTaHujll7nSbTQQHK37ICaZCJBEN3hK-X8oUOT-552KR7-vbv5G9M7OjON-n5RQzxVGj0teB-qbmRlUEl4jyzjxfStOXhQvuN1UsipSQeiydrCfZrCQ4" alt="Cherry Blossom" />
+                {hours < 56 && (
+                  <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-white p-4 text-center backdrop-blur-sm">
+                    <Lock className="w-6 h-6 mb-2 text-white/80" />
+                    <span className="text-xs font-bold tracking-wider uppercase mb-1">Locked</span>
+                    <span className="text-[10px]">Unlocks at 56 focus hours</span>
+                  </div>
+                )}
+              </div>
+              <h4 className="text-lg font-bold mb-1 font-newsreader">Cherry Blossom</h4>
+              <p className="text-[#3d5a2d] dark:text-[#b9ccb6] text-[10px] mb-3 font-medium uppercase tracking-widest">Ephemeral Focus</p>
+              <div className="mt-auto flex items-center justify-between">
+                <span className="text-[#1a1a1a]/60 dark:text-[#c3c8c2] text-xs italic">Grown on: Apr 04</span>
+                <Sparkles className="w-3.5 h-3.5 text-[#3d5a2d] dark:text-[#b9ccb6]" />
+              </div>
+            </div>
+          )}
+
+          {matchSearch('Rowan') && (
+            <div className={`md:col-span-4 bg-white dark:bg-[#0f1f17] border border-[#d9e8b5]/50 dark:border-[#1d2d25] rounded-[1.5rem] p-5 flex flex-col shadow-sm shadow-[#3d5a2d]/5 dark:shadow-[#b9ccb6]/5 transition-all duration-500 group ${hours >= 112 ? 'cursor-pointer hover:-translate-y-1' : 'opacity-60 grayscale'}`}>
+              <div className="aspect-[4/3] w-full mb-4 rounded-xl overflow-hidden bg-black/5 dark:bg-[#13231a] relative">
+                <img className={`w-full h-full object-cover transition-transform duration-700 opacity-90 ${hours >= 112 ? 'group-hover:scale-110' : ''}`} src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDRJhLIrWWKqv744276qc7wkKnAXR4HYCV8M-CDwAbjVNFy5Z_ClT6g_kOvLk4ufFGBIdx2RFGIV-ACTm68vFzjL5eI2JEcntsQtO0jVK6qyrZa8Sve6vERfvM0i7FoAQuWDpUa7k1UINVyALqdB4akt1Kw8mEVzYAZT2nqf6WPKV1xMtSkAk_zo7jf4VkhW53ZwJyq-_n2vpqj1jUZPtQtlKIjwJt5sQiI9aJjoPziPMnYOqRUKdISKQop--EP03XKA3uQkgrAXM" alt="Rowan" />
+                {hours < 112 && (
+                  <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-white p-4 text-center backdrop-blur-sm">
+                    <Lock className="w-6 h-6 mb-2 text-white/80" />
+                    <span className="text-xs font-bold tracking-wider uppercase mb-1">Locked</span>
+                    <span className="text-[10px]">Unlocks at 112 focus hours</span>
+                  </div>
+                )}
+              </div>
+              <h4 className="text-lg font-bold mb-1 font-newsreader">Rowan</h4>
+              <p className="text-[#3d5a2d] dark:text-[#b9ccb6] text-[10px] mb-3 font-medium uppercase tracking-widest">Protection</p>
+              <div className="mt-auto flex items-center justify-between">
+                <span className="text-[#1a1a1a]/60 dark:text-[#c3c8c2] text-xs italic">Unlocked: Level 4</span>
+                <Star className="w-3.5 h-3.5 text-[#3d5a2d] dark:text-[#b9ccb6]" />
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="mt-12 flex justify-center">
+          <button className="group flex items-center gap-2 py-3 px-8 rounded-full bg-white dark:bg-[#0f1f17] border border-[#d9e8b5]/50 dark:border-[#1d2d25] text-[#3d5a2d] dark:text-[#b9ccb6] font-bold text-xs tracking-tight hover:bg-black/5 dark:hover:bg-white/5 transition-all active:scale-95">
+            LOAD MORE SPECIES
+            <ChevronDown className="w-4 h-4 group-hover:translate-y-1 transition-transform" />
+          </button>
+        </div>
+      </main>
     </motion.div>
   );
 };
@@ -866,8 +1104,8 @@ export default function App() {
     }
   };
 
-  const handleAudioUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
+  const handleAudioUpload = (e: any) => {
+    const files = Array.from(e.target.files || []) as File[];
     if (files.length > 0) {
       const newItems = files.map(file => ({
         name: file.name,
