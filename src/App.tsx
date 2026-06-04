@@ -131,9 +131,12 @@ const LEADERBOARD_SEED = [
 
 const TREE_SPECIES = [
   { name: 'Silver Birch', rarity: 'Common', minMins: 0 },
-  { name: 'Ancient Oak', rarity: 'Rare', minMins: 60 },
-  { name: 'Whispering Willow', rarity: 'Epic', minMins: 120 },
-  { name: 'Lone Pine', rarity: 'Legendary', minMins: 240 },
+  { name: 'Weeping Willow', rarity: 'Common', minMins: 1680 },
+  { name: 'Cherry Blossom', rarity: 'Rare', minMins: 3360 },
+  { name: 'Rowan', rarity: 'Rare', minMins: 6720 },
+  { name: 'Scots Pine', rarity: 'Epic', minMins: 13440 },
+  { name: 'Lebanese Cedar', rarity: 'Legendary', minMins: 26880 },
+  { name: 'Ancient Oak', rarity: 'Mythic', minMins: 53760 },
 ];
 
 function getSpecies(totalMins: number) {
@@ -314,7 +317,7 @@ const ForestPage = ({ totalFocusSeconds }: { totalFocusSeconds: number }) => {
                   </div>
                   {unlocked
                     ? <span className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">Unlocked</span>
-                    : <span className="text-[10px] text-black/20 dark:text-[#c3c8c2]/30 uppercase">{s.minMins}m needed</span>}
+                    : <span className="text-[10px] text-black/20 dark:text-[#c3c8c2]/30 uppercase font-bold tracking-wider">Yet to unlock</span>}
                 </div>
               );
             })}
@@ -421,9 +424,16 @@ const SpeciesCollectionPage = ({ onClose, totalFocusSeconds }: { onClose: () => 
           )}
 
           {matchSearch('Silver Birch') && (
-            <div className="md:col-span-4 bg-white dark:bg-[#0f1f17] border border-[#d9e8b5]/50 dark:border-[#1d2d25] rounded-[1.5rem] p-5 flex flex-col group cursor-pointer transition-transform duration-500 hover:-translate-y-1 shadow-sm shadow-[#3d5a2d]/5 dark:shadow-[#b9ccb6]/5">
-              <div className="aspect-[4/3] w-full mb-4 rounded-xl overflow-hidden bg-black/5 dark:bg-[#13231a]">
-                <img className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-90" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6XN5EzgI1tyLeuKL2fJ4PY0kN4hUyIfY60h2_6e88v1txrTsUfaGCsFVEQJaF0SaUdCZJnBZyBY2QTJ2Y9YoJZNGuTu0K0TW3Am7e8gmaAy34z3lSx__PTOm42bSlIT2HhsDEs8yxQcJhWmyqt42jjgAvjtZMV0ktd0HznarwjSjbBHeInVJZ33mcT7ENpWZObT1oB63XmNfRC3wZ8yUsbAOGQjaFWOBTuzUPdKGTj21SiwvZZKC3avXJzuMEQzC1ksmvBJoHFe0" alt="Silver Birch" />
+            <div className={`md:col-span-4 bg-white dark:bg-[#0f1f17] border border-[#d9e8b5]/50 dark:border-[#1d2d25] rounded-[1.5rem] p-5 flex flex-col shadow-sm shadow-[#3d5a2d]/5 dark:shadow-[#b9ccb6]/5 transition-all duration-500 group ${hours >= 0 ? 'cursor-pointer hover:-translate-y-1' : 'opacity-60 grayscale'}`}>
+              <div className="aspect-[4/3] w-full mb-4 rounded-xl overflow-hidden bg-black/5 dark:bg-[#13231a] relative">
+                <img className={`w-full h-full object-cover transition-transform duration-700 opacity-90 ${hours >= 0 ? 'group-hover:scale-110' : ''}`} src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6XN5EzgI1tyLeuKL2fJ4PY0kN4hUyIfY60h2_6e88v1txrTsUfaGCsFVEQJaF0SaUdCZJnBZyBY2QTJ2Y9YoJZNGuTu0K0TW3Am7e8gmaAy34z3lSx__PTOm42bSlIT2HhsDEs8yxQcJhWmyqt42jjgAvjtZMV0ktd0HznarwjSjbBHeInVJZ33mcT7ENpWZObT1oB63XmNfRC3wZ8yUsbAOGQjaFWOBTuzUPdKGTj21SiwvZZKC3avXJzuMEQzC1ksmvBJoHFe0" alt="Silver Birch" />
+                {hours < 0 && (
+                  <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-white p-4 text-center backdrop-blur-sm">
+                    <Lock className="w-6 h-6 mb-2 text-white/80" />
+                    <span className="text-xs font-bold tracking-wider uppercase mb-1">Locked</span>
+                    <span className="text-[10px]">Unlocks at 0 focus hours</span>
+                  </div>
+                )}
               </div>
               <h4 className="text-lg font-bold mb-1 font-newsreader">Silver Birch</h4>
               <p className="text-[#3d5a2d] dark:text-[#b9ccb6] text-[10px] mb-3 font-medium uppercase tracking-widest">Pioneer Species</p>
