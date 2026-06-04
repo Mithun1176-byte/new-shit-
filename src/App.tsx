@@ -712,7 +712,9 @@ const ProfilePage = ({ deviceId, sessions, totalFocusSeconds, giveupCount, displ
               {sessions.slice(-5).reverse().map((s) => (
                 <div key={s.id} className="flex items-center gap-3 px-5 py-3 border-b border-black/5 dark:border-[#accebc]/5 last:border-0">
                   <div className={`w-2 h-2 rounded-full flex-shrink-0 ${s.completed ? 'bg-emerald-500' : 'bg-red-400'}`} />
-                  <span className="text-sm text-[#1a1a1a] dark:text-[#d4e7da] flex-1">{s.durationMins}m · {formatHour(s.hour)}</span>
+                  <span className="text-sm text-[#1a1a1a] dark:text-[#d4e7da] flex-1">
+                    {s.durationMins}m · {formatHour(s.hour)} <span className="text-xs opacity-60 ml-1">· {new Date(s.date + 'T12:00:00').toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+                  </span>
                   <span className={`text-[10px] font-bold uppercase tracking-wider ${s.completed ? 'text-emerald-500' : 'text-red-400'}`}>{s.completed ? 'Done' : 'Quit'}</span>
                 </div>
               ))}
