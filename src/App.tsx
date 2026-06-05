@@ -591,7 +591,7 @@ const ActivityChart = ({ sessions }: { sessions: Session[] }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-[#0f1f17] rounded-[2rem] p-6 shadow-sm border border-[#d9e8b5]/30 dark:border-[#accebc]/5">
+    <div className="bg-white dark:[#0f1f17] rounded-[2rem] p-6 shadow-sm border border-[#d9e8b5]/30 dark:border-[#accebc]/5">
       {/* Header with navigation */}
       <div className="flex items-center justify-between mb-6">
         <div>
